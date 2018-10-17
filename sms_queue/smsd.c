@@ -46,7 +46,7 @@ int return_check(FILE* fd){
 int main(int argc,char **argv){
     struct sigaction sigIntHandler;
     int nf, retry=0;
-    char cmd[256];
+    char cmd[MSGPHONELEN+MSGTXTLEN+50];
     pid_t process_id = 0;
     pid_t sid = 0;
     if(geteuid() != 0){
@@ -130,14 +130,14 @@ int main(int argc,char **argv){
         }else if(rc>=0){
             sprintf (msg.mtext, "%.143s", msg.mtext);
             for(retry=0; retry<NRETRY; retry++){
-                memset(cmd,0,strlen(cmd));
                 printf("[SMSD] %d\\%d to=%s msg=%s\n", retry+1, NRETRY, msg.mphone, msg.mtext);
-                strcpy(cmd,GSMEXEC);
-                strcat(cmd," \"");
-                strcat(cmd,msg.mphone);
-                strcat(cmd,"\" \"");
-                strcat(cmd,msg.mtext);
-                strcat(cmd,"\" 2>&1");
+                memset(cmd, 0, strlen(cmd));
+                strncpy(cmd, GSMEXEC, 22);
+                strcat(cmd, " \"");
+                strncat(cmd, msg.mphone, MSGPHONELEN);
+                strcat(cmd, "\" \"");
+                strncat(cmd, msg.mtext, MSGTXTLEN);
+                strcat(cmd, "\" 2>&1");
                 //int r = system(cmd);
                 FILE* test = popen(cmd, "r");
                 if(test==NULL||return_check(test)){
